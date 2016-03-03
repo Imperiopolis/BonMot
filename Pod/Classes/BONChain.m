@@ -342,6 +342,17 @@
     return [strikethroughColorBlock copy];
 }
 
+- (BONTagStyling)tagStyling
+{
+    BONTagStyling tagStylingBlock = ^(NSDictionary *tagStyling) {
+        __typeof(self) newChain = self.copyWithoutNextText;
+        newChain.text.tagStyling = tagStyling;
+        return newChain;
+    };
+
+    return [tagStylingBlock copy];
+}
+
 - (void)appendLink:(id<BONChainable>)link
 {
     [self appendLink:link separator:nil];

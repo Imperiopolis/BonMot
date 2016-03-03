@@ -40,6 +40,8 @@ typedef BONChain * (^BONChainUnderlineColor)(UIColor *color);
 typedef BONChain * (^BONChainStrikethroughStyle)(NSUnderlineStyle style);
 typedef BONChain * (^BONChainStrikethroughColor)(UIColor *color);
 
+typedef BONChain * (^BONTagStyling)(NSDictionary<NSString *, id<BONChainable>> *);
+
 @interface BONChain : NSObject <NSCopying, BONChainable>
 
 @property (copy, nonatomic, readonly) NSAttributedString *attributedString;
@@ -88,6 +90,14 @@ typedef BONChain * (^BONChainStrikethroughColor)(UIColor *color);
 
 @property (copy, nonatomic, readonly) BONChainStrikethroughStyle strikethroughStyle;
 @property (copy, nonatomic, readonly) BONChainStrikethroughColor strikethroughColor;
+
+/**
+ *  Assign @p BONChainables to use in styling substrings surrounded in given tags.
+ *  For example, ["b": boldChainable] would apply the @p boldChain
+ *  to any substring surrounded by <b></b> and remove the tags from the resulting
+ *  attributed string. Nested tagging is not supported.
+ */
+@property (copy, nonatomic, readonly) BONTagStyling tagStyling;
 
 // concatenation
 - (void)appendLink:(id<BONChainable>)link;

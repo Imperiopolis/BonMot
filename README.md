@@ -49,6 +49,7 @@ BonMot uses attributed strings to give you control over the following typographi
 - Figure case (uppercase vs. lowercase numbers)
 - Figure spacing (monospace vs. proportional numbers)
 - Inline Images with optional multi-line paragraph alignment
+- Tag parsing (excluding nested tags)
 
 Think something is missing? Please [file an issue](https://github.com/Raizlabs/BonMot/issues) (or add a +1 if one already exists).
 
@@ -242,6 +243,25 @@ Next, switch to the Attributes Inspector. `BONTextAlignmentConstraint` exposes t
 The layout won’t change in Interface Builder (IBDesignable is not supported for constraint subclasses), but it will work when you run your code.
 
 **Note:** some of the possible alignment values are not supported in all configurations. Check out [Issue #37](https://github.com/Raizlabs/BonMot/issues/37) for updates.
+
+## Tag Styling
+
+BonMot can style text between arbirtrary tags using a `<tag></tag>` format.
+
+```objc
+BONChain *boldChain = BONChain.new.fontNameAndSize(@"Baskerville-Bold", 15.0f);
+BONChain *italicChain = BONChain.new.fontNameAndSize(@"Baskerville-Italic", 15.0f);
+
+BONChain *chain = BONChain.new.fontNameAndSize(@"Baskerville", 17.0f)
+    .tagStyling(@{@"bold": boldChain, @"italic": italicChain})
+    .string(@"<bold>This text is wrapped in a <bold> tag.</bold>\n<italic>This text is wrapped in an <italic> tag.</italic>");
+
+NSAttributedString *string = chain.attributedString;
+```
+
+Outputs:
+
+<img width=275 height=40 src="readme-images/tag-styling.png" />
 
 ## Contributing
 

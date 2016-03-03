@@ -15,6 +15,11 @@
 static const CGFloat kBONAdobeTrackingDivisor = 1000.0f;
 static const CGFloat kBONDefaultFontSize = 15.0f; // per docs
 
+static const NSString *kBONTagStartPrefix = @"<";
+static const NSString *kBONTagStartSuffix = @">";
+static const NSString *kBONTagEndPrefix = @"</";
+static const NSString *kBONTagEndSuffix = @">";
+
 static inline BOOL BONCGFloatsCloseEnough(CGFloat float1, CGFloat float2)
 {
     const CGFloat epsilon = 0.00001; // ought to be good enough
@@ -71,6 +76,8 @@ static inline BOOL BONCGFloatsCloseEnough(CGFloat float1, CGFloat float2)
 {
     NSMutableAttributedString *mutableAttributedString = nil;
 
+    NSString *string = self.string;
+
     if (self.image) {
         NSAssert(!self.string, @"If self.image is non-nil, self.string must be nil");
         NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
@@ -88,11 +95,27 @@ static inline BOOL BONCGFloatsCloseEnough(CGFloat float1, CGFloat float2)
             [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"\t" attributes:self.attributes]];
         }
     }
-    else if (self.string) {
-        mutableAttributedString = [[NSMutableAttributedString alloc] initWithString:self.string
+    else if (string) {
+        // If there is tag styling applied, strip the tags from the string and identify the ranges to apply the tag based chains to.
+        NSDictionary *rangesPerTag = nil;
+
+        if (self.tagStyling) {
+            rangesPerTag = [self rangesInString:&string betweenTags:self.tagStyling.allKeys stripTags:YES];
+        }
+
+        mutableAttributedString = [[NSMutableAttributedString alloc] initWithString:string
                                                                          attributes:self.attributes];
-        if (lastConcatenant && self.string.length > 0) {
-            NSRange lastCharacterRange = NSMakeRange(self.string.length - 1, 1);
+
+        for (NSString *tag in rangesPerTag) {
+            NSDictionary *attributes = self.tagStyling[tag].text.attributes;
+            NSArray *ranges = rangesPerTag[tag];
+            for (NSValue *value in ranges) {
+                [mutableAttributedString setAttributes:attributes range:value.rangeValue];
+            }
+        }
+
+        if (lastConcatenant && string.length > 0) {
+            NSRange lastCharacterRange = NSMakeRange(string.length - 1, 1);
             [mutableAttributedString removeAttribute:NSKernAttributeName range:lastCharacterRange];
         }
         else {
@@ -113,8 +136,8 @@ static inline BOOL BONCGFloatsCloseEnough(CGFloat float1, CGFloat float2)
         if (self.image) {
             indentation += self.image.size.width;
         }
-        else if (self.string) {
-            NSAttributedString *measurementString = [[NSAttributedString alloc] initWithString:self.string attributes:self.attributes];
+        else if (string) {
+            NSAttributedString *measurementString = [[NSAttributedString alloc] initWithString:string attributes:self.attributes];
             CGRect boundingRect = [measurementString boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)
                                                                   options:NSStringDrawingUsesLineFragmentOrigin
                                                                   context:nil];
@@ -147,6 +170,72 @@ static inline BOOL BONCGFloatsCloseEnough(CGFloat float1, CGFloat float2)
     }
 
     return mutableAttributedString;
+}
+
+- (NSDictionary<NSString *, NSArray<NSValue *> *> *)rangesInString:(NSString **)string betweenTags:(NSArray<NSString *> *)tags stripTags:(BOOL)stripTags
+{
+    NSMutableDictionary *rangesPerTag = [NSMutableDictionary dictionary];
+
+    NSString *theString = *string;
+
+    NSRange searchRange = NSMakeRange(0, theString.length);
+
+    // Iterate over the string until there are no more tags
+    while (YES) {
+        NSString *nextTag;
+        NSString *nextStartTag;
+        NSString *nextEndTag;
+        NSRange nextStartTagRange;
+        NSRange nextEndTagRange;
+
+        // Find the next start tag
+        for (NSString *tag in tags) {
+            NSString *startTag = [NSString stringWithFormat:@"%@%@%@", kBONTagStartPrefix, tag, kBONTagStartSuffix];
+            NSString *endTag = [NSString stringWithFormat:@"%@%@%@", kBONTagEndPrefix, tag, kBONTagEndSuffix];
+
+            NSRange startTagRange = [theString rangeOfString:startTag options:0 range:searchRange];
+            NSRange endTagRange = [theString rangeOfString:endTag options:0 range:searchRange];
+            if (startTagRange.location != NSNotFound && endTagRange.location != NSNotFound) {
+                if (!nextTag || (startTagRange.location < nextStartTagRange.location)) {
+                    nextTag = tag;
+                    nextStartTag = startTag;
+                    nextEndTag = endTag;
+                    nextStartTagRange = startTagRange;
+                    nextEndTagRange = endTagRange;
+                }
+            }
+        }
+
+        if (!nextTag) {
+            break;
+        }
+
+        NSRange range = NSMakeRange(NSMaxRange(nextStartTagRange), nextEndTagRange.location - NSMaxRange(nextStartTagRange));
+
+        if (stripTags) {
+            range.location -= nextStartTag.length;
+
+            theString = [theString stringByReplacingOccurrencesOfString:nextStartTag withString:@"" options:0 range:nextStartTagRange];
+            nextStartTagRange.length = 0;
+
+            nextEndTagRange.location -= nextStartTag.length;
+            theString = [theString stringByReplacingOccurrencesOfString:nextEndTag withString:@"" options:0 range:nextEndTagRange];
+            nextEndTagRange.length = 0;
+        }
+
+        NSMutableArray *ranges = rangesPerTag[nextTag];
+        if (!ranges) {
+            ranges = [NSMutableArray array];
+            rangesPerTag[nextTag] = ranges;
+        }
+        [ranges addObject:[NSValue valueWithRange:range]];
+
+        searchRange = NSMakeRange(NSMaxRange(nextEndTagRange), [theString length] - NSMaxRange(nextEndTagRange));
+    }
+
+    *string = theString;
+
+    return rangesPerTag;
 }
 
 - (NSDictionary *)attributes
@@ -264,21 +353,21 @@ static inline BOOL BONCGFloatsCloseEnough(CGFloat float1, CGFloat float2)
     }
 
     // First Line Head Indent
-    
+
     if (self.firstLineHeadIndent != 0.0f) {
         populateParagraphStyleIfNecessary();
         paragraphStyle.firstLineHeadIndent = self.firstLineHeadIndent;
     }
 
     // Head Indent
-    
+
     if (self.headIndent != 0.0f) {
         populateParagraphStyleIfNecessary();
         paragraphStyle.headIndent = self.headIndent;
     }
 
     // Head Indent
-    
+
     if (self.tailIndent != 0.0f) {
         populateParagraphStyleIfNecessary();
         paragraphStyle.tailIndent = self.tailIndent;
@@ -292,14 +381,14 @@ static inline BOOL BONCGFloatsCloseEnough(CGFloat float1, CGFloat float2)
     }
 
     // Maximum Line Height
-    
+
     if (self.maximumLineHeight != 1.0f) {
         populateParagraphStyleIfNecessary();
         paragraphStyle.maximumLineHeight = self.maximumLineHeight;
     }
 
     // Minimum Line Height
-    
+
     if (self.minimumLineHeight != 1.0f) {
         populateParagraphStyleIfNecessary();
         paragraphStyle.minimumLineHeight = self.minimumLineHeight;
@@ -313,14 +402,14 @@ static inline BOOL BONCGFloatsCloseEnough(CGFloat float1, CGFloat float2)
     }
 
     // Paragraph Spacing
-    
+
     if (self.paragraphSpacingAfter != 0.0f) {
         populateParagraphStyleIfNecessary();
         paragraphStyle.paragraphSpacing = self.paragraphSpacingAfter;
     }
 
     // Paragraph Spacing Before
-    
+
     if (self.paragraphSpacingBefore != 0.0f) {
         populateParagraphStyleIfNecessary();
         paragraphStyle.paragraphSpacingBefore = self.paragraphSpacingBefore;
@@ -399,6 +488,8 @@ static inline BOOL BONCGFloatsCloseEnough(CGFloat float1, CGFloat float2)
 
     text.strikethroughStyle = self.strikethroughStyle;
     text.strikethroughColor = self.strikethroughColor;
+
+    text.tagStyling = self.tagStyling;
 
     return text;
 }
