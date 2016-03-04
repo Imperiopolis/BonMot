@@ -45,7 +45,7 @@ typedef BONChain * (^BONTagStyling)(NSDictionary<NSString *, id<BONChainable>> *
 @interface BONChain : NSObject <NSCopying, BONChainable>
 
 @property (copy, nonatomic, readonly) NSAttributedString *attributedString;
-@property (copy, nonatomic, readonly) NSDictionary *attributes;
+@property (copy, nonatomic, readonly) NSDictionary<NSString *, id> *attributes;
 
 // fontNameAndSize and font are mutually exclusive: setting one will unset the other
 @property (copy, nonatomic, readonly) BONChainFontNameAndSize fontNameAndSize;

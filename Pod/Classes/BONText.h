@@ -93,7 +93,7 @@ typedef NS_ENUM(NSUInteger, BONFigureSpacing) {
 // Getting Values Out
 
 @property (copy, nonatomic, readonly) NSAttributedString *attributedString;
-@property (copy, nonatomic, readonly) NSDictionary *attributes;
+@property (copy, nonatomic, readonly) NSDictionary<NSString *, id> *attributes;
 
 // Utilities
 
@@ -105,7 +105,7 @@ typedef NS_ENUM(NSUInteger, BONFigureSpacing) {
  *
  *  @return An @c NSAttributedString object that is the result of interposing separator’s attributed string between the attributed strings of the elements of the array. If the array has no elements, returns an @c NSAttributedString object representing an empty string.
  */
-+ (NSAttributedString *)joinTexts:(NSArray *)texts withSeparator:(BONText *)separator;
++ (NSAttributedString *)joinTexts:(NSArray<BONText *> *)texts withSeparator:(BONText *)separator;
 
 /**
  *  Calls [self debugStringIncludeImageAddresses:YES]
