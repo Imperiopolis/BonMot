@@ -22,7 +22,7 @@
 {
     UILabel *label = UILabel.new;
     label.bonChainable = BONChain.new.font([UIFont systemFontOfSize:16]);
-    label.text = @"Hello, world!";
+    label.textAndApplyChainable = @"Hello, world!";
 
     XCTAssertEqualObjects(label.attributedText.string, @"Hello, world!");
 
@@ -41,7 +41,7 @@
 - (void)testLabelTextBeforeChainable
 {
     UILabel *label = UILabel.new;
-    label.text = @"Hello, world!";
+    label.textAndApplyChainable = @"Hello, world!";
     label.bonChainable = BONChain.new.font([UIFont systemFontOfSize:16]);
 
     XCTAssertEqualObjects(label.attributedText.string, @"Hello, world!");
@@ -64,7 +64,6 @@
     label.bonChainable = BONChain.new.font([UIFont systemFontOfSize:16]);
     label.attributedText = [[NSAttributedString alloc] initWithString:@"Hello, world!"];
 
-    XCTAssertNil(label.bonChainable);
     XCTAssertEqualObjects(label.attributedText.string, @"Hello, world!");
 
     NSDictionary *controlAttributes = [self defaultAttributesForClass:[UILabel class] withString:@"Hello, world!"];
@@ -99,7 +98,7 @@
 {
     UITextView *textView = UITextView.new;
     textView.bonChainable = BONChain.new.font([UIFont systemFontOfSize:16]);
-    textView.text = @"Hello, world!";
+    textView.textAndApplyChainable = @"Hello, world!";
 
     XCTAssertEqualObjects(textView.attributedText.string, @"Hello, world!");
 
@@ -118,7 +117,7 @@
 - (void)testTextViewTextBeforeChainable
 {
     UITextView *textView = UITextView.new;
-    textView.text = @"Hello, world!";
+    textView.textAndApplyChainable = @"Hello, world!";
     textView.bonChainable = BONChain.new.font([UIFont systemFontOfSize:16]);
 
     XCTAssertEqualObjects(textView.attributedText.string, @"Hello, world!");
@@ -174,7 +173,7 @@
 {
     UITextField *textField = UITextField.new;
     textField.bonChainable = BONChain.new.font([UIFont systemFontOfSize:16]);
-    textField.text = @"Hello, world!";
+    textField.textAndApplyChainable = @"Hello, world!";
 
     XCTAssertEqualObjects(textField.attributedText.string, @"Hello, world!");
 
@@ -189,7 +188,7 @@
 - (void)testTextFieldTextBeforeChainable
 {
     UITextField *textField = UITextField.new;
-    textField.text = @"Hello, world!";
+    textField.textAndApplyChainable = @"Hello, world!";
     textField.bonChainable = BONChain.new.font([UIFont systemFontOfSize:16]);
 
     XCTAssertEqualObjects(textField.attributedText.string, @"Hello, world!");
@@ -208,7 +207,6 @@
     textField.bonChainable = BONChain.new.font([UIFont systemFontOfSize:16]);
     textField.attributedText = [[NSAttributedString alloc] initWithString:@"Hello, world!"];
 
-    XCTAssertNil(textField.bonChainable);
     XCTAssertEqualObjects(textField.attributedText.string, @"Hello, world!");
 
     NSDictionary *controlAttributes = [self defaultAttributesForClass:[UITextField class] withString:@"Hello, world!"];
