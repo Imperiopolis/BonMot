@@ -1,6 +1,6 @@
 {
   "name": "BonMot",
-  "version": "2.3",
+  "version": "3.0",
   "summary": "An Objective-C attributed string generation library.",
   "description": "BonMot removes all the mystery from creating beautiful, powerful attributed strings on iOS.",
   "homepage": "https://github.com/ZevEisenberg/BonMot",
@@ -10,17 +10,30 @@
   },
   "source": {
     "git": "https://github.com/ZevEisenberg/BonMot.git",
-    "tag": "2.3"
+    "tag": "3.0"
   },
   "social_media_url": "https://twitter.com/ZevEisenberg",
   "platforms": {
     "ios": "8.0"
   },
   "requires_arc": true,
-  "source_files": [
-    "Pod",
-    "Pod/Classes/**/*"
-  ],
-  "private_header_files": "Pod/Classes/*_Private.h",
-  "frameworks": "UIKit"
+  "frameworks": "UIKit",
+  "default_subspecs": "Core",
+  "subspecs": [
+    {
+      "name": "Core",
+      "source_files": [
+        "Pod",
+        "Pod/Classes/**/*"
+      ],
+      "private_header_files": "Pod/Classes/*_Private.h"
+    },
+    {
+      "name": "UI",
+      "source_files": [
+        "Pod/UI",
+        "Pod/UI/Classes/**/*"
+      ]
+    }
+  ]
 }

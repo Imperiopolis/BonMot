@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "BonMot"
-  s.version          = "2.3"
+  s.version          = "3.0"
   s.summary          = "An Objective-C attributed string generation library."
   s.description      = <<-DESC
   BonMot removes all the mystery from creating beautiful, powerful attributed strings on iOS.
@@ -14,8 +14,16 @@ Pod::Spec.new do |s|
   s.platform     = :ios, '8.0'
   s.requires_arc = true
 
-  s.source_files = 'Pod', 'Pod/Classes/**/*'
-  s.private_header_files = "Pod/Classes/*_Private.h"
-
   s.frameworks = 'UIKit'
+
+  s.default_subspec = 'Core'
+
+  s.subspec 'Core' do |sp|
+    sp.source_files = 'Pod', 'Pod/Classes/**/*'
+    sp.private_header_files = "Pod/Classes/*_Private.h"
+  end
+
+  s.subspec 'UI' do |sp|
+    sp.source_files = 'Pod/UI', 'Pod/UI/Classes/**/*'
+  end
 end

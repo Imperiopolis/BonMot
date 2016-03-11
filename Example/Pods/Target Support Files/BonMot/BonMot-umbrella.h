@@ -5,6 +5,7 @@
 #import "BONChainable.h"
 #import "BONSpecial.h"
 #import "BONText.h"
+#import "BonMot-UI.h"
 #import "BONTextAlignmentConstraint.h"
 #import "UIImage+BonMotUtilities.h"
 #import "UILabel+BonMotUtilities.h"
